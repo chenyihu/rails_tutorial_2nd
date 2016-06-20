@@ -2,32 +2,32 @@ require 'spec_helper'
 
 describe "AuthenticationPages" do
 	subject { page }
-	describe "signin page" do 
+	describe "signin page" do
 		before { visit signin_path }
 
 		it { should have_content('Sign in') }
 		it { should have_title('Sign in') }
 	end
 
-	describe "signin" do 
+	describe "signin" do
 
 		before { visit signin_path }
 
-		describe "with invalid information" do 
+		describe "with invalid information" do
 			before { click_button "Sign in" }
 
 			it { should have_title('Sign in')}
-			it { should have_selector('div.alert.alert-error', text: 'Invalid') }			
-			
+			it { should have_selector('div.alert.alert-error', text: 'Invalid') }
+
 			describe "after visiting another page" do
 				before { click_link "Home" }
 				it { should_not have_selector('div.alert.alert-error') }
 			end
 		end
 
-		describe "with valid information" do 
+		describe "with valid information" do
 			let(:user) { FactoryGirl.create(:user) }
-			# before do 
+			# before do
 			# 	fill_in "Email", with: user.email.upcase
 			# 	fill_in "Password", with: user.password
 			# 	click_button "Sign in"
@@ -68,6 +68,17 @@ describe "AuthenticationPages" do
 				before { patch user_path(user) }
 				specify { expect(response).to redirect_to(signin_path)}
 			end
+
+			describe "in the Microposts controller" do
+				describe "submitting to the create action" do
+					before { post microposts_path }
+					specify { expect(response).to redirect_to(signin_path) }
+				end
+				describe "submitting to the destroy action" do
+					before { delete micropost_path(FactoryGirl.create(:micropost)) }
+					specify { expect(response).to redirect_to(signin_path) }
+				end
+			end
 		end
 
 		describe "as wrong user" do
@@ -75,9 +86,9 @@ describe "AuthenticationPages" do
 			let(:wrong_user) { FactoryGirl.create(:user, email: "wrong@example.com") }
 			before { sign_in user, no_capybara: true }
 
-			describe "visiting User#edit page" do 
+			describe "visiting User#edit page" do
 				before { patch user_path(wrong_user) }
-				specify { expect(response).to redirect_to(root_path) }				
+				specify { expect(response).to redirect_to(root_path) }
 			end
 		end
 
